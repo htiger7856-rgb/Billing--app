@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billing App</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body{font-family:arial;margin:10px;background:#f2f2f2}
+input,button,select{width:100%;padding:10px;margin-top:5px}
+button{background:#007bff;color:white;border:none}
+.box{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px}
+</style>
+</head>
+<body>
+
+<h2>📱 Mobile Billing App</h2>
+
+<div class="box">
+<h3>Add Product</h3>
+<input id="pname" placeholder="Product name">
+<input id="pprice" type="number" placeholder="Price">
+<button onclick="addProduct()">Add Product</button>
+</div>
+
+<div class="box">
+<h3>Bill</h3>
+<select id="product"></select>
+<input id="qty" type="number" placeholder="Quantity">
+<input id="discount" type="number" placeholder="Discount %">
+<button onclick="addToBill()">Add To Bill</button>
+<p id="bill"></p>
+<h3>Total: <span id="total">0</span></h3>
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let cart = [];
+loadProducts();
+
+function loadProducts(){
+    let s = document.getElementById("product");
+    s.innerHTML="";
+    products.forEach((p,i)=>{
+        s.innerHTML += `<option value="${i}">${p.name} - ${p.price}</option>`;
+    });
+}
+
+function addProduct(){
+    let name = pname.value;
+    let price = pprice.value;
+    if(name=="" || price=="") return alert("Fill all");
+    products.push({name:name, price:price});
+    localStorage.setItem("products",JSON.stringify(products));
+    loadProducts();
+    pname.value=""; pprice.value="";
+}
+
+function addToBill(){
+    let idx = product.value;
+    let q = qty.value;
+    let d = discount.value;
+
+    let price = products[idx].price * q;
+    let disc = price * (d/100);
+    let final = price - disc;
+
+    cart.push(final);
+    total.innerText = cart.reduce((a,b)=>a+b,0);
+
+    bill.innerHTML += `<div>${products[idx].name} x ${q} = ${final}</div>`;
+}
+</script>
+
+<script>
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
